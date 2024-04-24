@@ -1,7 +1,17 @@
-<script setup></script>
+<script setup>
+import { ref } from "vue"
+import { useRoute, RouterLink } from "vue-router"
+import testVue from "./test.vue"
+
+const router = useRoute()
+const test = ref(false)
+</script>
 
 <template>
 	<div>
+		<teleport to="body" v-if="test">
+			<testVue />
+		</teleport>
 		<div class="w-[500px] text-red-500 border border-black px-8">
 			<table class="w-[100%]">
 				<tr class="flex justify-between">
@@ -12,9 +22,12 @@
 				</tr>
 				<tr class="flex justify-between">
 					<td>No</td>
-					<router-link><td>Tittle</td></router-link>
+					<router-link :to="{ path: '/task/' + 1 }">
+						<td @click="test = true">Tittle</td>
+					</router-link>
 					<td>Assignees</td>
 					<td>Status</td>
+					<td v-show="test">help</td>
 				</tr>
 			</table>
 		</div>

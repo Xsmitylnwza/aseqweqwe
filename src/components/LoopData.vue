@@ -1,9 +1,9 @@
 <script setup>
-import { RouterView } from "vue-router"
+const arr = []
 </script>
 
 <template>
-	<RouterView />
+	<div></div>
 </template>
 
 <style scoped></style>
