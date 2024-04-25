@@ -1,20 +1,75 @@
 <script setup>
 import { onMounted, ref } from "vue";
-import { useRoute, RouterLink } from "vue-router";
+import { useRoute, RouterLink, useRouter } from "vue-router";
 import testVue from "./test.vue";
 import Listmodel from "./ListModel.vue";
 import { getTodoById, getTodos } from "@/util/fetchUtils";
 
-const router = useRoute();
-
+const router = useRouter();
 const tasks = ref([]);
-
 const isTeleport = ref(false);
-const closeModal = (isClose) => (isTeleport.value = isClose);
+const taskDetails = ref();
+
+async function modalHandler(id) {
+  taskDetails.value = await getTodoById(
+    import.meta.env.VITE_BASE_URL + "/tasks",
+    id
+  );
+  taskDetails.value.createdOn = convertUtils(taskDetails.value.createdOn);
+  taskDetails.value.updatedOn = convertUtils(taskDetails.value.updatedOn);
+  isTeleport.value = true;
+}
+
+console.log(convertUtils("2024-04-22T09:00:00Z"));
+
+function convertUtils(yeahman) {
+  const formattedTimeZone = formatTimeZone(yeahman);
+  console.log(formattedTimeZone);
+  const [date, timeString] = formattedTimeZone.split(",");
+  console.log(date);
+  console.log(timeString);
+  const dateformat = convertDateFormat(date);
+  console.log(dateformat);
+  const timeformat = convertTimeTo24HourFormat(timeString.substring(1));
+  return `${dateformat} ${timeformat}`;
+}
+
+function convertTimeTo24HourFormat(timeString) {
+  const [time, period] = timeString.split(" ");
+  let [hour, minute, second] = time.split(":");
+
+  if (period === "PM" && hour !== "12") {
+    hour = String(Number(hour) + 12);
+  }
+
+  if (period === "AM" && hour === "12") {
+    hour = "00";
+  }
+
+  return `${hour}:${minute}:${second}`;
+}
+
+function convertDateFormat(dateString) {
+  return dateString.replace(/\//g, "-");
+}
+
+function formatTimeZone(timestampString) {
+  const timestamp = new Date(timestampString);
+  const userTimeZone = Intl.DateTimeFormat().resolvedOptions().timeZone;
+  const formattedtimestamp = timestamp.toLocaleString("en-US", {
+    timeZone: userTimeZone,
+  });
+  return formattedtimestamp;
+}
+
+function closeModal(isClose) {
+  isTeleport.value = isClose;
+  router.go(-1);
+}
+
 onMounted(async () => {
   const listTodo = await getTodos(import.meta.env.VITE_BASE_URL + "/tasks");
   tasks.value = listTodo;
-  console.log(tasks);
 });
 </script>
 
@@ -27,7 +82,11 @@ onMounted(async () => {
     </div>
     <div class="w-full max-w-4xl p-6 bg-white shadow-lg rounded-lg">
       <teleport to="body" v-if="isTeleport">
-        <testVue @back="closeModal" />
+        <testVue
+          @back="closeModal"
+          :taskDetails="taskDetails"
+          :timeZone="Intl.DateTimeFormat().resolvedOptions().timeZone"
+        />
       </teleport>
       <div class="w-full overflow-x-auto border border-black">
         <table class="w-full text-gray-700">
@@ -51,7 +110,7 @@ onMounted(async () => {
                       'To Do': 'hover:bg-yellow-200',
                     }[slotprop.job.status]
                   "
-                  @click="isTeleport = true"
+                  @click="modalHandler(slotprop.job.id)"
                 >
                   <td class="px-4 py-2">{{ slotprop.job.id }}</td>
 
