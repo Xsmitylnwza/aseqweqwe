@@ -1,6 +1,6 @@
 <script setup>
 const closebutton = false;
-defineEmits =(["back"])
+defineEmits = ["back"];
 </script>
 
 <template>
@@ -81,7 +81,6 @@ defineEmits =(["back"])
           ok
         </button>
         <button
-          @click="$emit("back", closebutton)"
           class="itbkk-button border-white border-2 rounded-2 text-white bg-gray-400"
         >
           Close
