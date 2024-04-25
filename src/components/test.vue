@@ -1,11 +1,9 @@
 <script setup>
-const closebutton = false;
-defineEmits = ["back"];
+const emit = defineEmits(["back"]);
 </script>
 
 <template>
   <div
-    :class="closebutton"
     class="kuykuy bg-grey-500 backdrop-blur-sm w-screen h-screen fixed top-0 left-0 pt-[100px]"
   >
     <div class="itbkk-title w-full border-b-2 border-gray pl-6">
@@ -75,12 +73,12 @@ defineEmits = ["back"];
     <div class="itbkk-* border-t-2 mt-6 flex flex-row-reverse">
       <div class="flex mt-5 mr-10">
         <button
-          v-show="true"
           class="itbkk-button border-white border-2 rounded-2 text-white bg-green-400"
         >
           ok
         </button>
         <button
+          @click="$emit('back', false)"
           class="itbkk-button border-white border-2 rounded-2 text-white bg-gray-400"
         >
           Close
