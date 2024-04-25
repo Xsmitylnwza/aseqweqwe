@@ -1,4 +1,4 @@
-async function getItems(url) {
+async function getTodos(url) {
 	try {
 		const data = await fetch(url)
 		const items = await data.json()
@@ -7,7 +7,7 @@ async function getItems(url) {
 		console.log(`error: ${error}`)
 	}
 }
-async function getItemById(url, id) {
+async function getTodoById(url, id) {
 	try {
 		const data = await fetch(`${url}/${id}`)
 		const item = await data.json()
@@ -16,3 +16,4 @@ async function getItemById(url, id) {
 		console.log(`error: ${error}`)
 	}
 }
+export { getTodos, getTodoById }
