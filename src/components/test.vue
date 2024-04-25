@@ -38,7 +38,8 @@ console.log(props.taskDetails);
             // taskDetails.taskDescription.length > 500
             //   ? taskDetails.taskDescription.slice(0, 500):
             taskDetails.taskDescription
-              ? taskDetails.taskDescription
+              ? taskDetails.taskDes
+              cription
               : "No Description Provided"
           }}</textarea
         >
