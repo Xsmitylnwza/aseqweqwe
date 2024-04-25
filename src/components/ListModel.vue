@@ -9,6 +9,7 @@ const props = defineProps({
 <template>
 	<div>
 		<slot v-for="(job, index) in jobs" :key="index" :job="job"> </slot>
+		<slot name="notask"></slot>
 	</div>
 </template>
 
