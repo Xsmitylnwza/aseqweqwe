@@ -62,7 +62,7 @@ const closeModal = (isClose) => (test.value = isClose)
 
 									<td class="px-4 py-2">{{ slotprop.job.assign }}</td>
 									<td
-										class="px-4 py-2 p-1.5 text-sm font-medium uppercase tracking-wider rounded-200 bg-opacity-50"
+										class="px-4 py-2 p-1.5 text-sm font-medium border border-black uppercase tracking-wider rounded-200 bg-opacity-50"
 										:class="
 											{
 												Doing: 'bg-red-200 text-red-800 rounded-se-2xl',
