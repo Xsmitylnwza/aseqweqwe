@@ -1,14 +1,28 @@
 <script setup>
-const closebutton = false
+import { getTodoById } from "@/util/fetchUtils"
+import { onMounted, ref } from "vue"
+import { useRoute } from "vue-router"
+import ListTodo from "./ListTodo.vue"
+
 const emit = defineEmits(["back"])
+const props = defineProps({
+	taskDetails: {
+		type: Object,
+	},
+	timeZone: {
+		type: String,
+		default: null,
+	},
+})
+console.log(props.taskDetails)
 </script>
 
 <template>
 	<div
-		class="kuykuy bg-grey-500 backdrop-blur-sm w-screen h-screen fixed top-0 left-0 pt-[100px]"
+		class="bg-grey-500 backdrop-blur-lg w-screen h-screen fixed top-0 left-0 pt-[100px]"
 	>
 		<div class="itbkk-title w-full border-b-2 border-gray pl-6">
-			<h1 class="p-2 text-2xl">Design Backend API for PBI 1,2</h1>
+			<h1 class="p-2 text-2xl">Design Backend API for PBI 1</h1>
 		</div>
 
 		<br />
@@ -17,18 +31,25 @@ const emit = defineEmits(["back"])
 			<br />
 			<div>
 				<p class="ml-7">Description</p>
-				<div
+				<textarea
 					class="itbkk-description ml-7 w-[950px] h-[450px] border border-black rounded-lg"
 				>
-					kuy 1
-				</div>
+				{{
+						taskDetails.taskDescription
+							? taskDetails.taskDescription
+							: "No Description Provided"
+					}}
+				</textarea
+				>
 			</div>
 			<div class="flex flex-col ml-10">
 				<div><p>Assignees</p></div>
 				<div
 					class="itbkk-assignees w-[400px] h-[200px] border border-black rounded-lg"
 				>
-					kuy 2
+					{{
+						taskDetails.taskAssignees ? taskDetails.taskAssignees : "Unassigned"
+					}}
 				</div>
 				<!-- status -->
 				<div class="itbkk-status w-[200px] h-[45px] mt-5">
@@ -49,7 +70,7 @@ const emit = defineEmits(["back"])
 						<div
 							class="itbkk-timezone w-[300px] h-[40px] border border-black rounded-lg ml-8"
 						>
-							kuy 4
+							{{ timeZone }}
 						</div>
 					</div>
 					<div class="flex flex-wrap mt-6">
@@ -57,7 +78,7 @@ const emit = defineEmits(["back"])
 						<div
 							class="itbkk-created-on w-[300px] h-[40px] border border-black rounded-lg ml-6"
 						>
-							kuy 5
+							{{ taskDetails.createdOn }}
 						</div>
 					</div>
 					<div class="flex flex-wrap mt-6">
@@ -65,7 +86,7 @@ const emit = defineEmits(["back"])
 						<div
 							class="itbkk-updated-on w-[300px] h-[40px] border border-black rounded-lg ml-4"
 						>
-							kuy 6
+							{{ taskDetails.updatedOn }}
 						</div>
 					</div>
 				</div>
