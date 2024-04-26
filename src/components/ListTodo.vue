@@ -3,30 +3,34 @@ import { onMounted, reactive, ref } from "vue"
 import { useRoute, RouterLink, useRouter } from "vue-router"
 import TodoModal from "./TodoModal.vue"
 import Listmodel from "./ListModel.vue"
-import { getTodoById, getTodos } from "@/util/fetchUtils"
+import { getTaskById, getTaskList } from "@/util/fetchUtils"
+import taskMangement from "@/libs/taskMangement"
 
 const route = useRouter()
-
 const tasks = ref([])
-
-const isTeleport = ref(false)
+const teleported = ref(false)
 const isEmptyTask = ref(false)
 const taskDetails = ref()
+const management = ref(new taskMangement())
 
 async function modalHandler(id) {
-	taskDetails.value = await getTodoById(
+	taskDetails.value = await getTaskById(
 		import.meta.env.VITE_BASE_URL + "/tasks",
 		id
 	)
+
+	// taskDetails.value = management.value.getTaskById(id) ใช้งานไม่ได้มันไม่มี createdOn, updatedOn มาให้ใช้
+
 	taskDetails.value.createdOn = convertUtils(taskDetails.value.createdOn)
 	taskDetails.value.updatedOn = convertUtils(taskDetails.value.updatedOn)
-	isTeleport.value = true
+	teleported.value = true
 }
 
 console.log(convertUtils("2024-04-22T09:00:00Z"))
 
-function convertUtils(yeahman) {
-	const formattedTimeZone = formatTimeZone(yeahman)
+function convertUtils(task) {
+	console.log(task)
+	const formattedTimeZone = formatTimeZone(task)
 	console.log(formattedTimeZone)
 	const [date, timeString] = formattedTimeZone.split(",")
 	console.log(date)
@@ -66,14 +70,15 @@ function formatTimeZone(timestampString) {
 }
 
 function closeModal(isClose) {
-	isTeleport.value = isClose
+	teleported.value = isClose
 	route.go(-1)
 }
 onMounted(async () => {
-	const listTodo = await getTodos(import.meta.env.VITE_BASE_URL + "/tasks")
+	const listTodo = await getTaskList(import.meta.env.VITE_BASE_URL + "/tasks")
 	if (listTodo.length === 0) isEmptyTask.value = true
 	tasks.value = listTodo
-	isTeleport.value = false
+	teleported.value = false
+	management.value.taskList = listTodo
 })
 </script>
 
@@ -83,7 +88,7 @@ onMounted(async () => {
 			<h1>IT-Bangmod Task Dashboard</h1>
 		</div>
 		<div class="w-full max-w-[90%] p-6 bg-gray-200 border border-black">
-			<teleport to="body" v-if="isTeleport">
+			<teleport to="body" v-if="teleported">
 				<TodoModal
 					@back="closeModal"
 					:taskDetails="taskDetails"
@@ -107,7 +112,7 @@ onMounted(async () => {
 							➕ Add
 						</td>
 					</tr> -->
-					<Listmodel :jobs="tasks">
+					<Listmodel :jobs="management.taskList">
 						<template #default="slotprop">
 							<router-link :to="{ path: '/task/' + slotprop.job.id }">
 								<tr

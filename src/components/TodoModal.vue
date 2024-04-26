@@ -1,5 +1,5 @@
 <script setup>
-import { getTodoById } from "@/util/fetchUtils"
+import { getTaskById } from "@/util/fetchUtils"
 import { onMounted, ref } from "vue"
 import { useRoute } from "vue-router"
 import ListTodo from "./ListTodo.vue"
