@@ -13,25 +13,19 @@ const teleported = ref(false)
 const isEmptyTask = ref(false)
 const taskDetails = ref({})
 const management = ref(new taskMangement())
-const id = ref(router.params.id)
-watchEffect(async () => {
-	id.value = router.params.id
-	await modalHandler(id.value)
-})
+const props = defineProps(['id']);
+
 async function modalHandler(id) {
 	console.log(taskDetails.value)
 	taskDetails.value = await getTaskById(
 		import.meta.env.VITE_BASE_URL + "/tasks",
 		id
 	)
-
 	taskDetails.value.createdOn = convertUtils(taskDetails.value.createdOn)
 	taskDetails.value.updatedOn = convertUtils(taskDetails.value.updatedOn)
-
 	teleported.value = true
 }
 
-console.log(convertUtils("2024-04-22T09:00:00Z"))
 
 function convertUtils(task) {
 	console.log(task)
@@ -57,7 +51,6 @@ function convertTimeTo24HourFormat(timeString) {
 	if (period === "AM" && hour === "12") {
 		hour = "00"
 	}
-
 	return `${hour}:${minute}:${second}`
 }
 
@@ -79,12 +72,14 @@ function closeModal(isClose) {
 	route.go(-1)
 }
 onMounted(async () => {
+	if (props.id) {
+		modalHandler(props.id);
+	}
 	const listTodo = await getTaskList(import.meta.env.VITE_BASE_URL + "/tasks")
 	if (listTodo.length === 0) isEmptyTask.value = true
 	tasks.value = listTodo
-	// teleported.value = false
 	management.value.taskList = listTodo
-})
+});
 </script>
 
 <template>
@@ -94,11 +89,8 @@ onMounted(async () => {
 		</div>
 		<div class="w-full max-w-[90%] p-6 bg-gray-200 border border-black">
 			<teleport to="body" v-if="teleported">
-				<TodoModal
-					@back="closeModal"
-					:taskDetails="taskDetails"
-					:timeZone="Intl.DateTimeFormat().resolvedOptions().timeZone"
-				/>
+				<TodoModal @back="closeModal" :taskDetails="taskDetails"
+					:timeZone="Intl.DateTimeFormat().resolvedOptions().timeZone" />
 			</teleport>
 			<div class="w-full overflow-auto border border-black">
 				<table class="w-full text-gray-700">
@@ -120,44 +112,36 @@ onMounted(async () => {
 					<Listmodel :jobs="management.taskList">
 						<template #default="slotprop">
 							<router-link :to="{ path: '/task/' + slotprop.job.id }">
-								<tr
-									class="flex justify-between my-[10px] p-[10px] text-[20px] border border-black hover:drop-shadow-2xl bg-white"
-									:class="
-										{
-											Doing: 'hover:border-l-[20px] border-l-red-400 ',
-											Done: 'hover:border-l-[20px] border-l-green-300',
-											'To Do': 'hover:border-l-[20px] border-l-yellow-200',
-										}[slotprop.job.taskStatus]
-									"
-									@click="modalHandler(slotprop.job.id)"
-								>
+								<tr class="flex justify-between my-[10px] p-[10px] text-[20px] border border-black hover:drop-shadow-2xl bg-white"
+									:class="{
+				Doing: 'hover:border-l-[20px] border-l-red-400 ',
+				Done: 'hover:border-l-[20px] border-l-green-300',
+				'To Do': 'hover:border-l-[20px] border-l-yellow-200',
+			}[slotprop.job.taskStatus]
+				" @click="modalHandler(slotprop.job.id)">
 									<td class="px-4 py-2 border border-black w-1/1">
 										{{ slotprop.job.id }}
 									</td>
 
 									<td
-										class="px-4 py-2 w-1/2 text-blue-600 cursor-pointer border border-black break-all"
-									>
+										class="px-4 py-2 w-1/2 text-blue-600 cursor-pointer border border-black break-all">
 										{{ slotprop.job.taskTitle }}
 									</td>
 
 									<td class="px-4 py-2 border border-black w-1/3">
 										{{
-											slotprop.job.taskAssignees
-												? slotprop.job.taskAssignees
-												: "kuy"
-										}}
+				slotprop.job.taskAssignees
+					? slotprop.job.taskAssignees
+					: "kuy"
+			}}
 									</td>
-									<td
-										class="px-4 py-2 p-1.5 w-[90px] text-sm text-center font-[20px] uppercase border border-black tracking-wider rounded-200 bg-opacity-50 rounded-[10px]"
-										:class="
-											{
-												Doing: 'bg-red-200 text-red-800',
-												Done: 'bg-green-200 text-green-800 ',
-												'To Do': 'bg-yellow-200 text-yellow-800 ',
-											}[slotprop.job.taskStatus]
-										"
-									>
+									<td class="px-4 py-2 p-1.5 w-[90px] text-sm text-center font-[20px] uppercase border border-black tracking-wider rounded-200 bg-opacity-50 rounded-[10px]"
+										:class="{
+					Doing: 'bg-red-200 text-red-800',
+					Done: 'bg-green-200 text-green-800 ',
+					'To Do': 'bg-yellow-200 text-yellow-800 ',
+				}[slotprop.job.taskStatus]
+				">
 										{{ slotprop.job.taskStatus }}
 									</td>
 								</tr>
