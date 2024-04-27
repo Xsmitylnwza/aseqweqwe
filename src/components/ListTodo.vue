@@ -1,5 +1,5 @@
 <script setup>
-import { onMounted, reactive, ref } from "vue"
+import { onMounted, reactive, ref, watchEffect } from "vue"
 import { useRoute, RouterLink, useRouter } from "vue-router"
 import TodoModal from "./TodoModal.vue"
 import Listmodel from "./ListModel.vue"
@@ -7,13 +7,19 @@ import { getTaskById, getTaskList } from "@/util/fetchUtils"
 import taskMangement from "@/libs/taskMangement"
 
 const route = useRouter()
+const router = useRoute()
 const tasks = ref([])
 const teleported = ref(false)
 const isEmptyTask = ref(false)
-const taskDetails = ref()
+const taskDetails = ref({})
 const management = ref(new taskMangement())
-
+const id = ref(router.params.id)
+watchEffect(async () => {
+	id.value = router.params.id
+	await modalHandler(id.value)
+})
 async function modalHandler(id) {
+	console.log(taskDetails.value)
 	taskDetails.value = await getTaskById(
 		import.meta.env.VITE_BASE_URL + "/tasks",
 		id
@@ -21,6 +27,7 @@ async function modalHandler(id) {
 
 	taskDetails.value.createdOn = convertUtils(taskDetails.value.createdOn)
 	taskDetails.value.updatedOn = convertUtils(taskDetails.value.updatedOn)
+
 	teleported.value = true
 }
 
@@ -75,7 +82,7 @@ onMounted(async () => {
 	const listTodo = await getTaskList(import.meta.env.VITE_BASE_URL + "/tasks")
 	if (listTodo.length === 0) isEmptyTask.value = true
 	tasks.value = listTodo
-	teleported.value = false
+	// teleported.value = false
 	management.value.taskList = listTodo
 })
 </script>

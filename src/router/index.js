@@ -22,5 +22,8 @@ const router = createRouter({
 		},
 	],
 })
+router.beforeEach(async (to, from) => {
+	to.fullPath
+})
 
 export default router

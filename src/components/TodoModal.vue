@@ -34,11 +34,13 @@ console.log(props.taskDetails)
 				<textarea
 					class="itbkk-description ml-7 w-[950px] h-[450px] border border-black rounded-lg"
 				>
-				{{
+				
+						{{
 						taskDetails.taskDescription
 							? taskDetails.taskDescription
 							: "No Description Provided"
 					}}
+					
 				</textarea
 				>
 			</div>
