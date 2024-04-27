@@ -11,9 +11,11 @@ async function getTaskById(url, id) {
 	try {
 		const data = await fetch(`${url}/${id}`)
 		const item = await data.json()
-		return item
-	} catch (error) {
-		console.log(`error: ${error}`)
-	}
+		if (data.status === 200) {
+			return item
+		} else {
+			return data.status
+		}
+	} catch (error) {}
 }
 export { getTaskList, getTaskById }
