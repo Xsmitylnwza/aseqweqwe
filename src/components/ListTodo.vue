@@ -19,8 +19,6 @@ async function modalHandler(id) {
 		id
 	)
 
-	// taskDetails.value = management.value.getTaskById(id) ใช้งานไม่ได้มันไม่มี createdOn, updatedOn มาให้ใช้
-
 	taskDetails.value.createdOn = convertUtils(taskDetails.value.createdOn)
 	taskDetails.value.updatedOn = convertUtils(taskDetails.value.updatedOn)
 	teleported.value = true
