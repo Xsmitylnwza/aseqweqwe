@@ -1,146 +1,194 @@
 <script setup>
-import { onMounted, ref } from "vue";
-import { useRoute, RouterLink, useRouter } from "vue-router";
-import testVue from "./test.vue";
-import Listmodel from "./ListModel.vue";
-import { getTodoById, getTodos } from "@/util/fetchUtils";
+import { onMounted, ref } from "vue"
+import { RouterLink, useRouter } from "vue-router"
+import TodoModal from "./TodoModal.vue"
+import Listmodel from "./ListModel.vue"
+import { getTaskById, getTaskList } from "@/util/fetchUtils"
+import taskMangement from "@/libs/taskMangement"
 
-const router = useRouter();
-const tasks = ref([]);
-const isTeleport = ref(false);
-const taskDetails = ref();
+const router = useRouter()
+const props = defineProps(["id"])
+const isModalOpen = ref(false)
+const isEmptyTask = ref(false)
+const taskDetails = ref({})
+const taskManagement = ref(new taskMangement())
 
 async function modalHandler(id) {
-  taskDetails.value = await getTodoById(
-    import.meta.env.VITE_BASE_URL + "/tasks",
-    id
-  );
-  taskDetails.value.createdOn = convertUtils(taskDetails.value.createdOn);
-  taskDetails.value.updatedOn = convertUtils(taskDetails.value.updatedOn);
-  isTeleport.value = true;
+	taskDetails.value = await getTaskById(
+		import.meta.env.VITE_BASE_URL + "/tasks",
+		id
+	)
+	if (typeof taskDetails.value === 'object') {
+		taskDetails.value.createdOn = convertUtils(taskDetails.value.createdOn)
+		taskDetails.value.updatedOn = convertUtils(taskDetails.value.updatedOn)
+		isModalOpen.value = true
+	} else {
+		window.alert("The requested task does not exist")
+		router.push("/")
+	}
 }
-
-console.log(convertUtils("2024-04-22T09:00:00Z"));
-
-function convertUtils(yeahman) {
-  const formattedTimeZone = formatTimeZone(yeahman);
-  console.log(formattedTimeZone);
-  const [date, timeString] = formattedTimeZone.split(",");
-  console.log(date);
-  console.log(timeString);
-  const dateformat = convertDateFormat(date);
-  console.log(dateformat);
-  const timeformat = convertTimeTo24HourFormat(timeString.substring(1));
-  return `${dateformat} ${timeformat}`;
-}
-
-function convertTimeTo24HourFormat(timeString) {
-  const [time, period] = timeString.split(" ");
-  let [hour, minute, second] = time.split(":");
-
-  if (period === "PM" && hour !== "12") {
-    hour = String(Number(hour) + 12);
-  }
-
-  if (period === "AM" && hour === "12") {
-    hour = "00";
-  }
-
-  return `${hour}:${minute}:${second}`;
-}
-
-function convertDateFormat(dateString) {
-  return dateString.replace(/\//g, "-");
+function convertUtils(timeUTC) {
+	const formattedTimeZone = formatTimeZone(timeUTC)
+	const [date, timeString] = formattedTimeZone.split(",")
+	return `${date} ${timeString}`
 }
 
 function formatTimeZone(timestampString) {
-  const timestamp = new Date(timestampString);
-  const userTimeZone = Intl.DateTimeFormat().resolvedOptions().timeZone;
-  const formattedtimestamp = timestamp.toLocaleString("en-US", {
-    timeZone: userTimeZone,
-  });
-  return formattedtimestamp;
+	const timestamp = new Date(timestampString)
+	const userTimeZone = Intl.DateTimeFormat().resolvedOptions().timeZone
+	const formattedtimestamp = timestamp.toLocaleString("en-GB", {
+		timeZone: userTimeZone,
+	})
+	return formattedtimestamp
 }
 
 function closeModal(isClose) {
-  isTeleport.value = isClose;
-  router.go(-1);
+	isModalOpen.value = isClose
+	router.go(-1)
 }
 
 onMounted(async () => {
-  const listTodo = await getTodos(import.meta.env.VITE_BASE_URL + "/tasks");
-  tasks.value = listTodo;
+	if (props.id) {
+		modalHandler(props.id)
+	}
+	const listTodo = await getTaskList(import.meta.env.VITE_BASE_URL + "/tasks")
+	if (listTodo.length === 0) isEmptyTask.value = true
+	taskManagement.value.addTasks(listTodo)
 });
 </script>
 
 <template>
-  <div
-    class="flex flex-col items-center justify-center w-full h-screen bg-gray-100"
-  >
-    <div class="text-xl font-bold text-gray-800 mb-4">
-      <h1>IT-Bangmod Task Dashboard</h1>
-    </div>
-    <div class="w-full max-w-4xl p-6 bg-white shadow-lg rounded-lg">
-      <teleport to="body" v-if="isTeleport">
-        <testVue
-          @back="closeModal"
-          :taskDetails="taskDetails"
-          :timeZone="Intl.DateTimeFormat().resolvedOptions().timeZone"
-        />
-      </teleport>
-      <div class="w-full overflow-x-auto border border-black">
-        <table class="w-full text-gray-700">
-          <thead class="flex justify-between bg-gray-300 p-[20px] text-lg">
-            <tr>
-              <th class="px-4 py-2 border border-black">No</th>
-              <th class="px-4 py-2">Title</th>
-              <th class="px-4 py-2">Assignees</th>
-              <th class="px-4 py-2">Status</th>
-            </tr>
-          </thead>
-          <Listmodel :jobs="tasks">
-            <template #default="slotprop">
-              <router-link :to="{ path: '/task/' + slotprop.job.id }">
-                <tr
-                  class="flex justify-between border border-black w-[100%] my-[10px] p-[10px] text-lg border-b"
-                  :class="
-                    {
-                      Doing: 'hover:bg-red-400',
-                      Done: 'hover:bg-green-300',
-                      'To Do': 'hover:bg-yellow-200',
-                    }[slotprop.job.status]
-                  "
-                  @click="modalHandler(slotprop.job.id)"
-                >
-                  <td class="px-4 py-2">{{ slotprop.job.id }}</td>
+	<teleport to="body" v-if="isModalOpen">
+		<TodoModal @back="closeModal" :taskDetails="taskDetails"
+			:timeZone="Intl.DateTimeFormat().resolvedOptions().timeZone" />
+	</teleport>
+	<div class="w-screen h-screen bg bg-[#FBFBFB] px-[35px] py-[25px] font-nonto">
+		<div class=" flex flex-row justify-between items-center w-[100%] h-[75px] mb-[15px]">
+			<div class="h-[75%] mt-[20px]">
+				<h1 class="text-[24px] text-gray-700 font-[800]">IT-Bangmod Kradan Kanban</h1>
+			</div>
+			<div class=" flex flex-row gap-[15px] h-[75%]">
+				<div class="flex w-[202px] h-[45px] px-[5px] m-[auto] border border-[#BDBDBD] rounded-[4px]">
+					<select class="w-[200px]">
+						<option>Show: All</option>
+						<option>Show: Test</option>
+						<option>Show: Test</option>
+					</select>
+				</div>
+				<div class="w-[45px] h-[45px] m-[auto] border border-[#BDBDBD] rounded-[4px]">
+					<div class="flex justify-center mt-[5px]">
+						<img src="/image/up-and-down-icon.png" class="w-[30px] h-[30px]">
+					</div>
+				</div>
+				<div class="w-[45px] h-[45px] m-[auto] border border-[#BDBDBD] rounded-[4px]">
+					<div class="flex justify-center mt-[5px]">
+						<img src="/image/filter-icon.png" class="w-[30px] h-[30px]">
+					</div>
+				</div>
+			</div>
+		</div>
+		<div class=" h-[500px]">
+			<div class="flex justify-between items-center w-[100%] px-[20px] min-h-[45px] font-[550]">
+				<div class="w-[10%]">
+					<p>No</p>
+				</div>
+				<div class="w-[50%] px-[15px]">
+					<p>
+						Title
+					</p>
+				</div>
+				<div class="w-[10%]">
+					<p>
+						Status
+					</p>
+				</div>
+				<div class="w-[30%]">
+					<p class="">
+						Assignees
+					</p>
+				</div>
+			</div>
+			<div
+				class=" flex items-center min-h-[55px] mb-[5px] px-[15px] border-dashed border-[3px] border-[#FFCB45] rounded-[8px]">
+				<div class="flex flex-row w-[50%] ">
+					<div class="mr-[10px]">
+						<svg width="28" height="28" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+							<path d="M12 6L12 18" stroke="#E2A300" stroke-width="2" stroke-linecap="round" />
+							<path d="M18 12L6 12" stroke="#E2A300" stroke-width="2" stroke-linecap="round" />
+						</svg>
+					</div>
+					<div class="font-[430]">Add New Task</div>
+				</div>
 
-                  <td
-                    class="px-4 py-2 text-blue-600 w-[300px] border border-black cursor-pointer"
-                  >
-                    {{ slotprop.job.taskTitle }}
-                  </td>
+			</div>
+			<Listmodel :jobs="taskManagement.getAllTask()" v-if="taskManagement.getAllTask().length != 0">
+				<template #default="slotprop">
+					<router-link :to="{ path: '/task/' + slotprop.job.id }">
+						<div class="itbkk-item flex justify-between w-[100%] min-h-[55px] px-[28px] py-[10px] mb-[3px] break-all border border-[#DDDDDD] rounded-[10px] bg-[#F9F9F9] reak-all hover:drop-shadow-2xl"
+							:class="{
+		'Doing': 'hover:border-l-[7px] hover:border-l-[#F55D30] ',
+		'Done': 'hover:border-l-[7px] hover:border-l-[#30F558]',
+		'To Do': 'hover:border-l-[7px] hover:border-l-[#F5C330]',
+		'No Status': 'hover:border-l-[7px] hover:border-l-gray-500'
+	}[slotprop.job.taskStatus]" @click="modalHandler(slotprop.job.id)">
+							<div class="w-[10%] font-[350]">
+								<p class="m-[auto]">
+									{{ slotprop.job.id }}
+								</p>
+							</div>
+							<div class="w-[50%]">
+								<div class="itbkk-title px-[15px] font-[430] ">
+									{{ slotprop.job.taskTitle }}
+								</div>
+							</div>
+							<div class="w-[10%]">
+								<div class="w-[100px] rounded-[5px] flex items-center justify-center" :class="{
+		'Doing': 'bg-[#F55D30] ',
+		'Done': 'bg-[#30F558]  ',
+		'To Do': 'bg-[#F5C330]  ',
+		'No Status': 'bg-gray-500'
+	}[slotprop.job.taskStatus]
+		">
+									<p class="itbkk-status text-white">
+										{{ slotprop.job.taskStatus }}
+									</p>
+								</div>
+							</div>
+							<div class="w-[30%] font-[350]">
+								<p class="itbkk-assignees" :class="{ 'italic': !slotprop.job.taskAssignees }">
+									{{
+		slotprop.job.taskAssignees
+			? slotprop.job.taskAssignees
+			: "Unassigned"
+									}}
+								</p>
 
-                  <td class="px-4 py-2">{{ slotprop.job.taskAssignees }}</td>
-                  <td
-                    class="px-4 py-2 p-1.5 text-sm font-medium border border-black uppercase tracking-wider rounded-200 bg-opacity-50"
-                    :class="
-                      {
-                        Doing: 'bg-red-200 text-red-800 rounded-se-2xl',
-                        Done: 'bg-green-200 text-green-800 rounded-se-2xl',
-                        'To Do': 'bg-yellow-200 text-yellow-800 rounded-se-2xl',
-                      }[slotprop.job.taskStatus]
-                    "
-                  >
-                    {{ slotprop.job.taskStatus }}
-                  </td>
-                </tr>
-              </router-link>
-            </template>
-          </Listmodel>
-        </table>
-      </div>
-    </div>
-  </div>
+							</div>
+							<div class="flex justify-center items-center">
+								<div>
+									<svg width="7" height="30" viewBox="0 0 7 30" fill="none"
+										xmlns="http://www.w3.org/2000/svg">
+										<circle cx="3.5" cy="3.5" r="3.5" fill="#969696" />
+										<circle cx="3.5" cy="26.5" r="3.5" fill="#969696" />
+										<circle cx="3.5" cy="14.8335" r="3.5" fill="#969696" />
+									</svg>
+								</div>
+							</div>
+						</div>
+					</router-link>
+				</template>
+			</Listmodel>
+			<div v-else>
+				<div
+					class="w-[100%] border border-[#DDDDDD] rounded-[10px] bg-[#F9F9F9] min-h-[45px] flex items-center justify-center">
+					<div class="m-[auto]">NO TASK LIST</div>
+				</div>
+			</div>
+
+
+		</div>
+	</div>
+
 </template>
 
 <style scoped></style>

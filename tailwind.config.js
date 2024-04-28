@@ -2,7 +2,15 @@
 export default {
 	content: ["./index.html", "./src/**/*.{vue,js,ts,jsx,tsx}"],
 	theme: {
-		extend: {},
+		extend: {
+			fontFamily: {
+				inter: "'Inter', sans-serif",
+				istok: "'Istok Web', sans-serif",
+				permenent: "'Permanent Marker', cursive",
+				nonto: "'Noto Sans JP', 'Noto Sans Thai'"
+			}
+		},
 	},
+
 	plugins: [],
 }

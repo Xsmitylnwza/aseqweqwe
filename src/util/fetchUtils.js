@@ -1,4 +1,4 @@
-async function getTodos(url) {
+async function getTaskList(url) {
 	try {
 		const data = await fetch(url)
 		const items = await data.json()
@@ -7,13 +7,15 @@ async function getTodos(url) {
 		console.log(`error: ${error}`)
 	}
 }
-async function getTodoById(url, id) {
+async function getTaskById(url, id) {
 	try {
 		const data = await fetch(`${url}/${id}`)
 		const item = await data.json()
-		return item
-	} catch (error) {
-		console.log(`error: ${error}`)
-	}
+		if (data.status === 200) {
+			return item
+		} else {
+			return data.status
+		}
+	} catch (error) {}
 }
-export { getTodos, getTodoById }
+export { getTaskList, getTaskById }
