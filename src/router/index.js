@@ -21,10 +21,6 @@ const router = createRouter({
 			component: ListTodo,
 			props: true,
 		},
-		{
-			path: "/*",
-			component: ListTodo,
-		},
 	],
 })
 

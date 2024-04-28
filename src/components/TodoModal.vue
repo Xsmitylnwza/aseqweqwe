@@ -1,9 +1,4 @@
 <script setup>
-import { getTaskById } from "@/util/fetchUtils";
-import { onMounted, ref } from "vue";
-import { useRoute } from "vue-router";
-import ListTodo from "./ListTodo.vue";
-
 const emit = defineEmits(["back"]);
 const props = defineProps({
   taskDetails: {
@@ -14,99 +9,86 @@ const props = defineProps({
     default: null,
   },
 });
-console.log(props.taskDetails);
+console.log(props.taskDetails)
 </script>
 
 <template>
-  <div
-    class="bg-grey-500 backdrop-blur-lg w-screen h-screen fixed top-0 left-0 pt-[100px]"
-  >
-    <div class="itbkk-title w-full border-b-2 border-gray pl-6">
-      <h1 class="p-2 text-2xl">Design Backend API for PBI 1</h1>
-    </div>
+  <div class="backdrop-blur-sm bg-black/50 w-screen h-screen fixed top-0 left-0 font-nonto">
+    <div class="flex justify-center items-center w-[100%] h-[100%]">
+      <div class="w-[75%] h-[90%] rounded-[15px] bg bg-white">
+        <header
+          class="h-[10%] px-[25px] mb-[10px] pt-[10px] bg bg-[#F8F8F8] border-b-2 border-gray-300 rounded-t-[7px]">
+          <div class="itbkk-title text-[22px] font-[500] break-all">{{ taskDetails.taskTitle }}</div>
+        </header>
+        <main class="flex flex-row h-[80%] px-[25px] ">
+          <div class="w-[70%] h-[100%] py-[10px]">
+            <p class="font-[600]">Description</p>
+            <textarea class="itbkk-description w-[95%] h-[90%] px-[15px] border-[2px] border-gray-400 rounded-[8px]"
+              :class="{ 'italic text-gray-500': !taskDetails.taskDescription }">
 
-    <br />
-    <!-- description -->
-    <div class="flex">
-      <br />
-      <div>
-        <p class="ml-7">Description</p>
-        <textarea
-          class="itbkk-description ml-7 w-[950px] h-[450px] border border-black rounded-lg"
-        >
-				
 						{{
             taskDetails.taskDescription
               ? taskDetails.taskDescription
               : "No Description Provided"
           }}
-					
-				</textarea
-        >
-      </div>
-      <div class="flex flex-col ml-10">
-        <div><p>Assignees</p></div>
-        <div
-          class="itbkk-assignees w-[400px] h-[200px] border border-black rounded-lg"
-        >
-          {{
+				    </textarea>
+          </div>
+          <div class="flex flex-col w-[30%] h-[94%]">
+            <div class="flex flex-col h-[45%] py-[10px] mb-[15px]">
+              <p class="font-[650] ">
+                Assignees
+              </p>
+              <div
+                class="itbkk-assignees min-h-[180px] px-[10px] py-[12px] border-[2px] border-gray-300 rounded-[4px] break-all"
+                :class="{ 'italic text-gray-500': !taskDetails.taskAssignees }">
+                {{
             taskDetails.taskAssignees ? taskDetails.taskAssignees : "Unassigned"
           }}
-        </div>
-        <!-- status -->
-        <div class="itbkk-status w-[200px] h-[45px] mt-5">
-          <label class="" for="cars"><p class="pl-1">Status</p></label>
-
-          <select name="status">
-            <option value="no_status">No Status</option>
-            <option value="to_do">To Do</option>
-            <option value="doing">Doing</option>
-            <option value="done">Done</option>
-          </select>
-        </div>
-
-        <!-- timezone -->
-        <div class="ml-3 mt-5 flex flex-col">
-          <div class="flex flex-wrap">
-            <p>Time Zone</p>
-            <div
-              class="itbkk-timezone w-[300px] h-[40px] border border-black rounded-lg ml-8"
-            >
-              {{ timeZone }}
+              </div>
+            </div>
+            <div class="flex flex-col justify-between h-[55%]">
+              <div>
+                <p class="font-[600]">
+                  Status
+                </p>
+                <div class="itbkk-status border border-gray-300 min-h-[50px] rounded-[5px]">
+                  <select name="status" class="w-full h-full min-h-[50px] px-[15px]">
+                    <option value="no_status">No Status</option>
+                    <option value="to_do">To Do</option>
+                    <option value="doing">Doing</option>
+                    <option value="done">Done</option>
+                  </select>
+                </div>
+              </div>
+              <div class="flex flex-col gap-[15px] ">
+                <div class="itbkk-timezone flex">
+                  <p class="font-[600] mr-[10px]">TimeZone:</p>
+                  <p class="ml-[auto]">{{ timeZone }}</p>
+                </div>
+                <div class="itbkk-created-on flex">
+                  <p class="font-[600]">Created On:</p>
+                  <p class="ml-[auto]">{{ taskDetails.createdOn }}</p>
+                </div>
+                <div class="itbkk-updated-on flex">
+                  <p class="font-[600]">Updated On:</p>
+                  <p class="ml-[auto]">{{ taskDetails.updatedOn }}</p>
+                </div>
+              </div>
             </div>
           </div>
-          <div class="flex flex-wrap mt-6">
-            <p>Created On</p>
+        </main>
+        <footer class="h-[10%] px-[25px] border-t-2 border-gray-300 bg bg-[#F8F8F8] rounded-b-[7px]">
+          <div class="flex flex-row justify-end items-center gap-[15px] mt-[10px]">
             <div
-              class="itbkk-created-on w-[300px] h-[40px] border border-black rounded-lg ml-6"
-            >
-              {{ taskDetails.createdOn }}
+              class="itbkk-button flex w-[65px] h-[40px] font-[600] text-white bg bg-green-500 rounded-[3px] hover:bg-green-600">
+              <button class="m-[auto]">Ok</button>
+            </div>
+            <div class="itbkk-button flex w-[80px] h-[40px] font-[600] text-gary-800 bg bg-gray-200 hover:bg-gray-300"
+              @click="$emit('back', false)">
+              <button class="m-[auto]">Close</button>
             </div>
           </div>
-          <div class="flex flex-wrap mt-6">
-            <p>Updated On</p>
-            <div
-              class="itbkk-updated-on w-[300px] h-[40px] border border-black rounded-lg ml-4"
-            >
-              {{ taskDetails.updatedOn }}
-            </div>
-          </div>
-        </div>
-      </div>
-    </div>
-    <div class="itbkk-* border-t-2 mt-6 flex flex-row-reverse">
-      <div class="flex mt-5 mr-10">
-        <button
-          class="itbkk-button border-white border-2 rounded-2 text-white bg-green-400"
-        >
-          ok
-        </button>
-        <button
-          @click="$emit('back', false)"
-          class="itbkk-button border-white border-2 rounded-2 text-white bg-gray-400"
-        >
-          Close
-        </button>
+        </footer>
       </div>
     </div>
   </div>
