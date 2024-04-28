@@ -9,7 +9,6 @@ const props = defineProps({
     default: null,
   },
 });
-console.log(props.taskDetails)
 </script>
 
 <template>
