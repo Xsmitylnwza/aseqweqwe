@@ -7,12 +7,11 @@ import { getTaskById, getTaskList } from "@/util/fetchUtils"
 import taskMangement from "@/libs/taskMangement"
 
 const router = useRouter()
-const tasks = ref([])
-const teleported = ref(false)
+const props = defineProps(["id"])
+const isModalOpen = ref(false)
 const isEmptyTask = ref(false)
 const taskDetails = ref({})
 const taskManagement = ref(new taskMangement())
-const props = defineProps(["id"])
 
 async function modalHandler(id) {
 	taskDetails.value = await getTaskById(
@@ -22,7 +21,7 @@ async function modalHandler(id) {
 	if (typeof taskDetails.value === 'object') {
 		taskDetails.value.createdOn = convertUtils(taskDetails.value.createdOn)
 		taskDetails.value.updatedOn = convertUtils(taskDetails.value.updatedOn)
-		teleported.value = true
+		isModalOpen.value = true
 	} else {
 		window.alert("The requested task does not exist")
 		router.push("/")
@@ -34,7 +33,6 @@ function convertUtils(timeUTC) {
 	return `${date} ${timeString}`
 }
 
-
 function formatTimeZone(timestampString) {
 	const timestamp = new Date(timestampString)
 	const userTimeZone = Intl.DateTimeFormat().resolvedOptions().timeZone
@@ -45,7 +43,7 @@ function formatTimeZone(timestampString) {
 }
 
 function closeModal(isClose) {
-	teleported.value = isClose
+	isModalOpen.value = isClose
 	router.go(-1)
 }
 
@@ -55,13 +53,12 @@ onMounted(async () => {
 	}
 	const listTodo = await getTaskList(import.meta.env.VITE_BASE_URL + "/tasks")
 	if (listTodo.length === 0) isEmptyTask.value = true
-	tasks.value = listTodo
-	taskManagement.value.taskList = listTodo
+	taskManagement.value.addTasks(listTodo)
 });
 </script>
 
 <template>
-	<teleport to="body" v-if="teleported">
+	<teleport to="body" v-if="isModalOpen">
 		<TodoModal @back="closeModal" :taskDetails="taskDetails"
 			:timeZone="Intl.DateTimeFormat().resolvedOptions().timeZone" />
 	</teleport>

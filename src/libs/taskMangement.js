@@ -12,6 +12,11 @@ export default class taskMangement {
 	addTask(newTask) {
 		this.taskList.push(newTask)
 	}
+	addTasks(newTasks) {
+		newTasks.forEach((newTask) => {
+			this.addTask(newTask)
+		})
+	}
 	editTask(taskId, updateTaks) {
 		const index = this.taskList.findIndex((e) => e.id === taskId)
 		this.taskList[index] = {
