@@ -9,6 +9,7 @@ const props = defineProps({
     default: null,
   },
 });
+
 </script>
 
 <template>
@@ -52,10 +53,10 @@ const props = defineProps({
                 </p>
                 <div class="itbkk-status border border-gray-300 min-h-[50px] rounded-[5px]">
                   <select name="status" class="w-full h-full min-h-[50px] px-[15px]">
-                    <option value="no_status">No Status</option>
-                    <option value="to_do">To Do</option>
-                    <option value="doing">Doing</option>
-                    <option value="done">Done</option>
+                    <option :selected="taskDetails?.taskStatus === 'No Status'">No Status</option>
+                    <option :selected="taskDetails?.taskStatus === 'To Do'">To Do</option>
+                    <option :selected="taskDetails?.taskStatus === 'Doing'">Doing</option>
+                    <option :selected="taskDetails?.taskStatus === 'Done'">Done</option>
                   </select>
                 </div>
               </div>
