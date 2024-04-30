@@ -126,10 +126,10 @@ onMounted(async () => {
 					<router-link :to="{ path: '/task/' + slotprop.job.id }">
 						<div class="itbkk-item flex justify-between w-[100%] min-h-[55px] px-[28px] py-[10px] mb-[3px] break-all border border-[#DDDDDD] rounded-[10px] bg-[#F9F9F9] reak-all hover:drop-shadow-2xl"
 							:class="{
-		'Doing': 'hover:border-l-[7px] hover:border-l-[#F55D30] ',
-		'Done': 'hover:border-l-[7px] hover:border-l-[#30F558]',
-		'To Do': 'hover:border-l-[7px] hover:border-l-[#F5C330]',
-		'No Status': 'hover:border-l-[7px] hover:border-l-gray-500'
+		'DOING': 'hover:border-l-[7px] hover:border-l-[#F55D30] ',
+		'DONE': 'hover:border-l-[7px] hover:border-l-[#30F558]',
+		'TO_DO': 'hover:border-l-[7px] hover:border-l-[#F5C330]',
+		'NO_STATUS': 'hover:border-l-[7px] hover:border-l-gray-500'
 	}[slotprop.job.taskStatus]" @click="modalHandler(slotprop.job.id)">
 							<div class="w-[10%] font-[350]">
 								<p class="m-[auto]">
@@ -143,14 +143,18 @@ onMounted(async () => {
 							</div>
 							<div class="w-[10%]">
 								<div class="w-[100px] rounded-[5px] flex items-center justify-center" :class="{
-		'Doing': 'bg-[#F55D30] ',
-		'Done': 'bg-[#30F558]  ',
-		'To Do': 'bg-[#F5C330]  ',
-		'No Status': 'bg-gray-500'
+		'DOING': 'bg-[#F55D30] ',
+		'DONE': 'bg-[#30F558]  ',
+		'TO_DO': 'bg-[#F5C330]  ',
+		'NO_STATUS': 'bg-gray-500'
 	}[slotprop.job.taskStatus]
 		">
 									<p class="itbkk-status text-white">
-										{{ slotprop.job.taskStatus }}
+										<template v-if="slotprop.job.taskStatus === 'DOING'">Doing</template>
+										<template v-else-if="slotprop.job.taskStatus === 'DONE'">Done</template>
+										<template v-else-if="slotprop.job.taskStatus === 'TO_DO'">To do</template>
+										<template v-else-if="slotprop.job.taskStatus === 'NO_STATUS'">No
+											status</template>
 									</p>
 								</div>
 							</div>
