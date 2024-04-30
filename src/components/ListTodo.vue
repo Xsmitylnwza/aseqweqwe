@@ -133,12 +133,12 @@ onMounted(async () => {
 	}[slotprop.job.taskStatus]" @click="modalHandler(slotprop.job.id)">
 							<div class="w-[10%] font-[350]">
 								<p class="m-[auto]">
-									{{ slotprop.job.id }}
+									{{ slotprop.key + 1 }}
 								</p>
 							</div>
 							<div class="w-[50%]">
 								<div class="itbkk-title px-[15px] font-[430] ">
-									{{ slotprop.job.taskTitle }}
+									{{ slotprop.job.title }}
 								</div>
 							</div>
 							<div class="w-[10%]">
@@ -147,22 +147,22 @@ onMounted(async () => {
 		'DONE': 'bg-[#30F558]  ',
 		'TO_DO': 'bg-[#F5C330]  ',
 		'NO_STATUS': 'bg-gray-500'
-	}[slotprop.job.taskStatus]
+	}[slotprop.job.status]
 		">
 									<p class="itbkk-status text-white">
-										<template v-if="slotprop.job.taskStatus === 'DOING'">Doing</template>
-										<template v-else-if="slotprop.job.taskStatus === 'DONE'">Done</template>
-										<template v-else-if="slotprop.job.taskStatus === 'TO_DO'">To do</template>
-										<template v-else-if="slotprop.job.taskStatus === 'NO_STATUS'">No
-											status</template>
+										<template v-if="slotprop.job.status === 'DOING'">Doing</template>
+										<template v-else-if="slotprop.job.status === 'DONE'">Done</template>
+										<template v-else-if="slotprop.job.status === 'TO_DO'">To Do</template>
+										<template v-else-if="slotprop.job.status === 'NO_STATUS'">No
+											Status</template>
 									</p>
 								</div>
 							</div>
 							<div class="w-[30%] font-[350]">
-								<p class="itbkk-assignees" :class="{ 'italic': !slotprop.job.taskAssignees }">
+								<p class="itbkk-assignees" :class="{ 'italic': !slotprop.job.assignees }">
 									{{
-		slotprop.job.taskAssignees
-			? slotprop.job.taskAssignees
+		slotprop.job.assignees
+			? slotprop.job.assignees
 			: "Unassigned"
 									}}
 								</p>

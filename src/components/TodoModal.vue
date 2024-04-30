@@ -18,17 +18,17 @@ const props = defineProps({
       <div class="w-[75%] h-[90%] rounded-[15px] bg bg-white">
         <header
           class="h-[10%] px-[25px] mb-[10px] pt-[10px] bg bg-[#F8F8F8] border-b-2 border-gray-300 rounded-t-[7px]">
-          <div class="itbkk-title text-[22px] font-[500] break-all">{{ taskDetails.taskTitle }}</div>
+          <div class="itbkk-title text-[22px] font-[500] break-all">{{ taskDetails.title }}</div>
         </header>
         <main class="flex flex-row h-[80%] px-[25px] ">
           <div class="w-[70%] h-[100%] py-[10px]">
             <p class="font-[600]">Description</p>
             <textarea class="itbkk-description w-[95%] h-[90%] px-[15px] border-[2px] border-gray-400 rounded-[8px]"
-              :class="{ 'italic text-gray-500': !taskDetails.taskDescription }">
+              :class="{ 'italic text-gray-500': !taskDetails.description }">
 
 						{{
-            taskDetails.taskDescription
-              ? taskDetails.taskDescription
+            taskDetails.description
+              ? taskDetails.description
               : "No Description Provided"
           }}
 				    </textarea>
@@ -40,9 +40,9 @@ const props = defineProps({
               </p>
               <div
                 class="itbkk-assignees min-h-[180px] px-[10px] py-[12px] border-[2px] border-gray-300 rounded-[4px] break-all"
-                :class="{ 'italic text-gray-500': !taskDetails.taskAssignees }">
+                :class="{ 'italic text-gray-500': !taskDetails.assignees }">
                 {{
-            taskDetails.taskAssignees ? taskDetails.taskAssignees : "Unassigned"
+            taskDetails.assignees ? taskDetails.assignees : "Unassigned"
           }}
               </div>
             </div>
@@ -53,10 +53,10 @@ const props = defineProps({
                 </p>
                 <div class="itbkk-status border border-gray-300 min-h-[50px] rounded-[5px]">
                   <select name="status" class="w-full h-full min-h-[50px] px-[15px]">
-                    <option :selected="taskDetails?.taskStatus === 'NO_STATUS'">No Status</option>
-                    <option :selected="taskDetails?.taskStatus === 'TO_DO'">To Do</option>
-                    <option :selected="taskDetails?.taskStatus === 'DOING'">Doing</option>
-                    <option :selected="taskDetails?.taskStatus === 'DONE'">Done</option>
+                    <option :selected="taskDetails?.status === 'NO_STATUS'">No Status</option>
+                    <option :selected="taskDetails?.status === 'TO_DO'">To Do</option>
+                    <option :selected="taskDetails?.status === 'DOING'">Doing</option>
+                    <option :selected="taskDetails?.status === 'DONE'">Done</option>
                   </select>
                 </div>
               </div>
