@@ -1,31 +1,54 @@
 <script setup>
 import { onMounted, ref } from "vue"
 import { RouterLink, useRouter } from "vue-router"
-import TodoModal from "./TodoModal.vue"
+import TaskModal from "./TaskModal.vue"
 import Listmodel from "./ListModel.vue"
 import { getTaskById, getTaskList } from "@/util/fetchUtils"
 import taskMangement from "@/libs/taskMangement"
+import DeleteModal from "./DeleteModal.vue"
 
 const router = useRouter()
 const props = defineProps(["id"])
 const isModalOpen = ref(false)
 const isEmptyTask = ref(false)
 const taskDetails = ref({})
+const isShowDeleteModal = ref(false)
+const mode = ref("read")
 const taskManagement = ref(new taskMangement())
 
-async function modalHandler(id) {
-	taskDetails.value = await getTaskById(
-		import.meta.env.VITE_BASE_URL + "/tasks",
-		id
-	)
-	if (typeof taskDetails.value === 'object') {
+async function modalHandler(id, modeza) {
+	console.log(id)
+	console.log(modeza)
+	if (modeza === 'read') {
+		console.log(modeza)
+		taskDetails.value = await getTaskById(
+			import.meta.env.VITE_BASE_URL + "/tasks",
+			id
+		)
+		if (typeof taskDetails.value === 'object') {
+			taskDetails.value.createdOn = convertUtils(taskDetails.value.createdOn)
+			taskDetails.value.updatedOn = convertUtils(taskDetails.value.updatedOn)
+			mode.value = "read"
+			isModalOpen.value = true
+		} else {
+			window.alert("The requested task does not exist")
+			router.push("/")
+		}
+	} else if (modeza === 'add') {
+		console.log("HAH")
+		mode.value = "add"
+		isModalOpen.value = true
+	} else if (modeza === 'edit') {
+		taskDetails.value = await getTaskById(
+			import.meta.env.VITE_BASE_URL + "/tasks",
+			id
+		)
 		taskDetails.value.createdOn = convertUtils(taskDetails.value.createdOn)
 		taskDetails.value.updatedOn = convertUtils(taskDetails.value.updatedOn)
+		mode.value = 'edit'
 		isModalOpen.value = true
-	} else {
-		window.alert("The requested task does not exist")
-		router.push("/")
 	}
+
 }
 function convertUtils(timeUTC) {
 	const formattedTimeZone = formatTimeZone(timeUTC)
@@ -44,12 +67,44 @@ function formatTimeZone(timestampString) {
 
 function closeModal(isClose) {
 	isModalOpen.value = isClose
+	taskDetails.value = {}
 	router.go(-1)
+}
+function closeDeleteModal(isClose) {
+	console.log(isClose)
+	taskDetails.value = {}
+	isShowDeleteModal.value = false
+}
+function confirmDelete(id) {
+	console.log(id)
+	taskManagement.value.deleteTask(id)
+	isShowDeleteModal.value = false
+}
+
+function confirmHandeler(mode, taskDetails) {
+	console.log(mode)
+	console.log(taskDetails)
+	if (mode === 'add') {
+		taskManagement.value.addTask(taskDetails)
+	}
+	if (mode === 'edit') {
+		taskManagement.value.editTask(taskDetails.id, taskDetails)
+
+	}
+
+	closeModal(false)
+}
+
+function deleteModalHandler(tasks) {
+	console.log(tasks)
+	taskDetails.value = tasks
+	isShowDeleteModal.value = true;
 }
 
 onMounted(async () => {
+	console.log("ON MOUNTED")
 	if (props.id) {
-		modalHandler(props.id)
+		modalHandler(props.id, 'read')
 	}
 	const listTodo = await getTaskList(import.meta.env.VITE_BASE_URL + "/tasks")
 	if (listTodo.length === 0) isEmptyTask.value = true
@@ -58,9 +113,12 @@ onMounted(async () => {
 </script>
 
 <template>
+	<Teleport to="body" v-if="isShowDeleteModal">
+		<DeleteModal @cancel="closeDeleteModal" @confirm="confirmDelete" :taskDetails="taskDetails" />
+	</Teleport>
 	<teleport to="body" v-if="isModalOpen">
-		<TodoModal @back="closeModal" :taskDetails="taskDetails"
-			:timeZone="Intl.DateTimeFormat().resolvedOptions().timeZone" />
+		<TaskModal @back="closeModal" @confirm="confirmHandeler" :taskDetails="taskDetails"
+			:timeZone="Intl.DateTimeFormat().resolvedOptions().timeZone" :mode="mode" />
 	</teleport>
 	<div class="w-screen h-screen bg bg-[#FBFBFB] px-[35px] py-[25px] font-nonto">
 		<div class=" flex flex-row justify-between items-center w-[100%] h-[75px] mb-[15px]">
@@ -108,78 +166,104 @@ onMounted(async () => {
 					</p>
 				</div>
 			</div>
-			<div
-				class=" flex items-center min-h-[55px] mb-[5px] px-[15px] border-dashed border-[3px] border-[#FFCB45] rounded-[8px]">
-				<div class="flex flex-row w-[50%] ">
-					<div class="mr-[10px]">
-						<svg width="28" height="28" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
-							<path d="M12 6L12 18" stroke="#E2A300" stroke-width="2" stroke-linecap="round" />
-							<path d="M18 12L6 12" stroke="#E2A300" stroke-width="2" stroke-linecap="round" />
-						</svg>
+			<router-link :to="{ path: '/task/add' }">
+				<div class="itbkk-button-add flex items-center min-h-[55px] mb-[5px] px-[15px] border-dashed border-[3px] border-[#FFCB45] rounded-[8px]"
+					@click="modalHandler(null, 'add')">
+					<div class="flex flex-row w-[50%] ">
+						<div class="mr-[10px]">
+							<svg width="28" height="28" viewBox="0 0 24 24" fill="none"
+								xmlns="http://www.w3.org/2000/svg">
+								<path d="M12 6L12 18" stroke="#E2A300" stroke-width="2" stroke-linecap="round" />
+								<path d="M18 12L6 12" stroke="#E2A300" stroke-width="2" stroke-linecap="round" />
+							</svg>
+						</div>
+						<div class="font-[430]">Add New Task</div>
 					</div>
-					<div class="font-[430]">Add New Task</div>
 				</div>
-
-			</div>
+			</router-link>
 			<Listmodel :jobs="taskManagement.getAllTask()" v-if="taskManagement.getAllTask().length != 0">
 				<template #default="slotprop">
-					<router-link :to="{ path: '/task/' + slotprop.job.id }">
-						<div class="itbkk-item flex justify-between w-[100%] min-h-[55px] px-[28px] py-[10px] mb-[3px] break-all border border-[#DDDDDD] rounded-[10px] bg-[#F9F9F9] reak-all hover:drop-shadow-2xl"
-							:class="{
+					<div class="itbkk-item flex justify-between w-[100%] min-h-[55px] px-[28px] py-[10px] mb-[3px] break-all border border-[#DDDDDD] rounded-[10px] bg-[#F9F9F9] reak-all hover:drop-shadow-2xl"
+						:class="{
 		'DOING': 'hover:border-l-[7px] hover:border-l-[#F55D30] ',
 		'DONE': 'hover:border-l-[7px] hover:border-l-[#30F558]',
 		'TO_DO': 'hover:border-l-[7px] hover:border-l-[#F5C330]',
 		'NO_STATUS': 'hover:border-l-[7px] hover:border-l-gray-500'
-	}[slotprop.job.taskStatus]" @click="modalHandler(slotprop.job.id)">
-							<div class="w-[10%] font-[350]">
-								<p class="m-[auto]">
-									{{ slotprop.key + 1 }}
-								</p>
-							</div>
-							<div class="w-[50%]">
-								<div class="itbkk-title px-[15px] font-[430] ">
-									{{ slotprop.job.title }}
+	}[slotprop.job.taskStatus]">
+						<router-link :to="{ path: '/task/' + slotprop.job.id }" class="w-full h-full">
+							<div class="flex w-full min-h-[55px]" @click="modalHandler(slotprop.job.id, 'read')">
+								<div class="w-[10%] font-[350]">
+									<p class="m-[auto]">
+										{{ slotprop.key + 1 }}
+									</p>
 								</div>
-							</div>
-							<div class="w-[10%]">
-								<div class="w-[100px] rounded-[5px] flex items-center justify-center" :class="{
+								<div class="w-[50%]">
+									<div class="itbkk-title px-[15px] font-[430] ">
+										{{ slotprop.job.title }}
+									</div>
+								</div>
+								<div class="w-[10%]">
+									<div class="w-[100px] rounded-[5px] flex items-center justify-center" :class="{
 		'DOING': 'bg-[#F55D30] ',
 		'DONE': 'bg-[#30F558]  ',
 		'TO_DO': 'bg-[#F5C330]  ',
 		'NO_STATUS': 'bg-gray-500'
 	}[slotprop.job.status]
 		">
-									<p class="itbkk-status text-white">
-										<template v-if="slotprop.job.status === 'DOING'">Doing</template>
-										<template v-else-if="slotprop.job.status === 'DONE'">Done</template>
-										<template v-else-if="slotprop.job.status === 'TO_DO'">To Do</template>
-										<template v-else-if="slotprop.job.status === 'NO_STATUS'">No
-											Status</template>
-									</p>
+										<p class="itbkk-status text-white">
+											<template v-if="slotprop.job.status === 'DOING'">Doing</template>
+											<template v-else-if="slotprop.job.status === 'DONE'">Done</template>
+											<template v-else-if="slotprop.job.status === 'TO_DO'">To Do</template>
+											<template v-else-if="slotprop.job.status === 'NO_STATUS'">No
+												Status</template>
+										</p>
+									</div>
 								</div>
-							</div>
-							<div class="w-[30%] font-[350]">
-								<p class="itbkk-assignees" :class="{ 'italic': !slotprop.job.assignees }">
-									{{
+								<div class="w-[30%] font-[350]">
+									<p class="itbkk-assignees" :class="{ 'italic': !slotprop.job.assignees }">
+										{{
 		slotprop.job.assignees
 			? slotprop.job.assignees
 			: "Unassigned"
-									}}
-								</p>
+	}}
+									</p>
 
-							</div>
-							<div class="flex justify-center items-center">
-								<div>
-									<svg width="7" height="30" viewBox="0 0 7 30" fill="none"
-										xmlns="http://www.w3.org/2000/svg">
-										<circle cx="3.5" cy="3.5" r="3.5" fill="#969696" />
-										<circle cx="3.5" cy="26.5" r="3.5" fill="#969696" />
-										<circle cx="3.5" cy="14.8335" r="3.5" fill="#969696" />
-									</svg>
 								</div>
 							</div>
+						</router-link>
+						<!-- <div class="flex justify-center items-center border border-blue-500 w-[2%]">
+							<div>
+								<svg width="7" height="30" viewBox="0 0 7 30" fill="none"
+									xmlns="http://www.w3.org/2000/svg">
+									<circle cx="3.5" cy="3.5" r="3.5" fill="#969696" />
+									<circle cx="3.5" cy="26.5" r="3.5" fill="#969696" />
+									<circle cx="3.5" cy="14.8335" r="3.5" fill="#969696" />
+								</svg>
+							</div>
+						</div> -->
+						<div class="itbkk-button-action dropdown dropdown-end dropdown-hover">
+							<div tabindex="0" role="button" class="btn m-1 z-0">
+								<svg width="7" height="30" viewBox="0 0 7 30" fill="none"
+									xmlns="http://www.w3.org/2000/svg">
+									<circle cx="3.5" cy="3.5" r="3.5" fill="#969696" />
+									<circle cx="3.5" cy="26.5" r="3.5" fill="#969696" />
+									<circle cx="3.5" cy="14.8335" r="3.5" fill="#969696" />
+								</svg>
+							</div>
+							<ul tabindex="0"
+								class="dropdown-content z-1 menu p-2 shadow bg-base-100 rounded-box w-52 absolute">
+								<router-link :to="{ path: '/task/' + slotprop.job.id + '/edit' }">
+									<li class="itbkk-button-edit" @click="modalHandler(slotprop.job.id, 'edit')">
+										<a>Edit</a>
+									</li>
+								</router-link>
+								<li class="itbkk-button-delete" @click="deleteModalHandler(slotprop.job)">
+									<a>Delete</a>
+								</li>
+							</ul>
 						</div>
-					</router-link>
+
+					</div>
 				</template>
 			</Listmodel>
 			<div v-else>

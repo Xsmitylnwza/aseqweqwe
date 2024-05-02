@@ -24,4 +24,10 @@ export default class taskMangement {
 			...updateTaks,
 		}
 	}
+	deleteTask(taskId) {
+		this.taskList.splice(
+			this.taskList.findIndex((task) => task.id === taskId),
+			1
+		)
+	}
 }

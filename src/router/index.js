@@ -21,6 +21,16 @@ const router = createRouter({
 			component: ListTodo,
 			props: true,
 		},
+		{
+			path: "/task/add",
+			name: "add",
+			component: ListTodo
+		},
+		{
+			path: "/task/:id/edit",
+			name: "edit",
+			component: ListTodo
+		}
 	],
 })
 
