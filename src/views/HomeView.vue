@@ -1,26 +1,40 @@
 <script setup>
 import { onMounted, ref } from "vue"
-import { RouterLink, useRouter } from "vue-router"
-import TaskModal from "./TaskModal.vue"
-import Listmodel from "./ListModel.vue"
-import { getTaskById, getTaskList } from "@/util/fetchUtils"
+import { RouterLink,useRouter,useRoute } from "vue-router"
+import { getTaskById, getTaskList, addTask, editTask, deleteTaskById } from "@/util/fetchUtils"
+import TaskModal from "@/components/TaskModal.vue"
+import Listmodel from "@/components/ListModel.vue"
 import taskMangement from "@/libs/taskMangement"
-import DeleteModal from "./DeleteModal.vue"
+import DeleteModal from "@/components/DeleteModal.vue"
+import AlertMessage from "@/components/AlertMessage.vue"
 
 const router = useRouter()
-const props = defineProps(["id"])
-const isModalOpen = ref(false)
+const modalOpen = ref(false)
 const isEmptyTask = ref(false)
 const taskDetails = ref({})
-const isShowDeleteModal = ref(false)
+const showDeleteModal = ref(false)
+const showAlertModal = ref(false)
+const taskNumber = ref()
+const message = ref()
+const statusType = ref()
 const mode = ref("read")
 const taskManagement = ref(new taskMangement())
 
-async function modalHandler(id, modeza) {
-	console.log(id)
-	console.log(modeza)
-	if (modeza === 'read') {
-		console.log(modeza)
+onMounted(async () => {
+	console.log("ON MOUNTED")
+	const fullPath = router.currentRoute.value.fullPath
+	const id = fullPath.split('/')[2]
+	if (fullPath.includes('edit')) {
+		modalHandler(id, 'edit')
+	}else if(id) modalHandler(id,'read')
+
+	const listTodo = await getTaskList(import.meta.env.VITE_BASE_URL + "/tasks")
+	if (listTodo.length === 0) isEmptyTask.value = true
+	taskManagement.value.addTasks(listTodo)
+});
+
+async function modalHandler(id, action) {
+	if (action === 'read') {
 		taskDetails.value = await getTaskById(
 			import.meta.env.VITE_BASE_URL + "/tasks",
 			id
@@ -29,16 +43,15 @@ async function modalHandler(id, modeza) {
 			taskDetails.value.createdOn = convertUtils(taskDetails.value.createdOn)
 			taskDetails.value.updatedOn = convertUtils(taskDetails.value.updatedOn)
 			mode.value = "read"
-			isModalOpen.value = true
+			modalOpen.value = true
 		} else {
 			window.alert("The requested task does not exist")
 			router.push("/")
 		}
-	} else if (modeza === 'add') {
-		console.log("HAH")
+	} else if (action === 'add') {
 		mode.value = "add"
-		isModalOpen.value = true
-	} else if (modeza === 'edit') {
+		modalOpen.value = true
+	} else if (action === 'edit') {
 		taskDetails.value = await getTaskById(
 			import.meta.env.VITE_BASE_URL + "/tasks",
 			id
@@ -46,7 +59,7 @@ async function modalHandler(id, modeza) {
 		taskDetails.value.createdOn = convertUtils(taskDetails.value.createdOn)
 		taskDetails.value.updatedOn = convertUtils(taskDetails.value.updatedOn)
 		mode.value = 'edit'
-		isModalOpen.value = true
+		modalOpen.value = true
 	}
 
 }
@@ -65,67 +78,93 @@ function formatTimeZone(timestampString) {
 	return formattedtimestamp
 }
 
-function closeModal(isClose) {
-	isModalOpen.value = isClose
-	taskDetails.value = {}
-	router.go(-1)
-}
 function closeDeleteModal(isClose) {
-	console.log(isClose)
 	taskDetails.value = {}
-	isShowDeleteModal.value = false
+	showDeleteModal.value = isClose
 }
-function confirmDelete(id) {
+function deleteModalHandler(tasks,number) {
+	taskDetails.value = tasks
+	taskNumber.value = number
+	showDeleteModal.value = true;
+}
+async function confirmDelete(id) {
 	console.log(id)
-	taskManagement.value.deleteTask(id)
-	isShowDeleteModal.value = false
+	const response = await deleteTaskById(import.meta.env.VITE_BASE_URL + "/tasks", id)
+	console.log(response)
+	if(response.status === 200){
+		taskManagement.value.deleteTask(id)
+		showDeleteModal.value = false
+		statusHandler(taskDetails.value.title,'delete')
+		taskDetails.value = {}	
+	}
+	if(response.status === 404){
+		window.alert('The task does not exist !!!')
+		taskManagement.value.deleteTask(id)		
+		showDeleteModal.value = false
+		taskDetails.value = {}
+	}
 }
 
-function confirmHandeler(mode, taskDetails) {
-	console.log(mode)
+async function confirmHandeler(action, taskDetails) {
+	console.log(action)
 	console.log(taskDetails)
-	if (mode === 'add') {
-		taskManagement.value.addTask(taskDetails)
+	if (!taskDetails.title) {
+		window.alert("You must input title !!!")
+		return
 	}
-	if (mode === 'edit') {
+	if (action === 'add') {
+		const respone = await addTask(import.meta.env.VITE_BASE_URL + "/tasks", taskDetails)
+		statusHandler(respone.title,'success')
+		taskManagement.value.addTask(respone)
+	}
+	if (action === 'edit') {
+		const respone = await editTask(import.meta.env.VITE_BASE_URL + "/tasks", taskDetails)
+		console.log(respone)
 		taskManagement.value.editTask(taskDetails.id, taskDetails)
 
 	}
-
 	closeModal(false)
 }
+function closeModal(isClose) {
+	modalOpen.value = isClose
+	taskDetails.value = {}
+	router.go(-1)
+}
+function statusHandler(title,status){
+	if(status === 'success'){
+		message.value = "The task "+title+ " is added successfully"
+	}else if(status === 'delete'){
+		message.value = "The task "+title+ " is deleted successfully"
+	}
+	statusType.value = "success"
+	showAlertModal.value = true
+}
+function closeStatusModal(isClose){
+	showAlertModal.value = isClose
+	message.value = ""
+	statusType.value = ""
 
-function deleteModalHandler(tasks) {
-	console.log(tasks)
-	taskDetails.value = tasks
-	isShowDeleteModal.value = true;
 }
 
-onMounted(async () => {
-	console.log("ON MOUNTED")
-	if (props.id) {
-		modalHandler(props.id, 'read')
-	}
-	const listTodo = await getTaskList(import.meta.env.VITE_BASE_URL + "/tasks")
-	if (listTodo.length === 0) isEmptyTask.value = true
-	taskManagement.value.addTasks(listTodo)
-});
+
+
+
 </script>
 
 <template>
-	<Teleport to="body" v-if="isShowDeleteModal">
-		<DeleteModal @cancel="closeDeleteModal" @confirm="confirmDelete" :taskDetails="taskDetails" />
+	<Teleport to="body" v-if="showDeleteModal">
+		<DeleteModal @cancel="closeDeleteModal" @confirm="confirmDelete" :taskDetails="taskDetails" :taskNumber="taskNumber" />
 	</Teleport>
-	<teleport to="body" v-if="isModalOpen">
+	<teleport to="body" v-if="modalOpen">
 		<TaskModal @back="closeModal" @confirm="confirmHandeler" :taskDetails="taskDetails"
 			:timeZone="Intl.DateTimeFormat().resolvedOptions().timeZone" :mode="mode" />
 	</teleport>
 	<div class="w-screen h-screen bg bg-[#FBFBFB] px-[35px] py-[25px] font-nonto">
 		<div class=" flex flex-row justify-between items-center w-[100%] h-[75px] mb-[15px]">
-			<div class="h-[75%] mt-[20px]">
+			<div class="h-[75%] mt-[20px] ">
 				<h1 class="text-[24px] text-gray-700 font-[800]">IT-Bangmod Kradan Kanban</h1>
 			</div>
-			<div class=" flex flex-row gap-[15px] h-[75%]">
+			<div class=" flex flex-row gap-[15px] h-[75%] ">
 				<div class="flex w-[202px] h-[45px] px-[5px] m-[auto] border border-[#BDBDBD] rounded-[4px]">
 					<select class="w-[200px]">
 						<option>Show: All</option>
@@ -145,6 +184,7 @@ onMounted(async () => {
 				</div>
 			</div>
 		</div>
+		<AlertMessage v-show="showAlertModal" @close="closeStatusModal" :message="message" :type="statusType"  />
 		<div class=" h-[500px]">
 			<div class="flex justify-between items-center w-[100%] px-[20px] min-h-[45px] font-[550]">
 				<div class="w-[10%]">
@@ -231,16 +271,6 @@ onMounted(async () => {
 								</div>
 							</div>
 						</router-link>
-						<!-- <div class="flex justify-center items-center border border-blue-500 w-[2%]">
-							<div>
-								<svg width="7" height="30" viewBox="0 0 7 30" fill="none"
-									xmlns="http://www.w3.org/2000/svg">
-									<circle cx="3.5" cy="3.5" r="3.5" fill="#969696" />
-									<circle cx="3.5" cy="26.5" r="3.5" fill="#969696" />
-									<circle cx="3.5" cy="14.8335" r="3.5" fill="#969696" />
-								</svg>
-							</div>
-						</div> -->
 						<div class="itbkk-button-action dropdown dropdown-end dropdown-hover">
 							<div tabindex="0" role="button" class="btn m-1 z-0">
 								<svg width="7" height="30" viewBox="0 0 7 30" fill="none"
@@ -257,7 +287,7 @@ onMounted(async () => {
 										<a>Edit</a>
 									</li>
 								</router-link>
-								<li class="itbkk-button-delete" @click="deleteModalHandler(slotprop.job)">
+								<li class="itbkk-button-delete" @click="deleteModalHandler(slotprop.job,slotprop.key + 1)">
 									<a>Delete</a>
 								</li>
 							</ul>
@@ -272,8 +302,6 @@ onMounted(async () => {
 					<div class="m-[auto]">NO TASK LIST</div>
 				</div>
 			</div>
-
-
 		</div>
 	</div>
 

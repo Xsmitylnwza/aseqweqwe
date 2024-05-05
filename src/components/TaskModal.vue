@@ -16,9 +16,6 @@ const props = defineProps({
   }
 });
 
-
-console.log(props.taskDetails)
-console.log(props.mode)
 </script>
 
 <template>
@@ -28,7 +25,7 @@ console.log(props.mode)
         <header class="h-[10%] px-[25px] mb-[10px] pt-[10px] bg bg-[#F8F8F8] border-b-2 rounded-t-[7px]">
           <div v-show="mode !== 'read'">{{ mode === 'add' ? 'New Task' : 'Edit Task' }}</div>
           <textarea class="itbkk-title h-[40px] w-[100%] text-[22px] font-[500] break-all" :disabled="mode === 'read'"
-            placeholder="YEAH MAN" v-model="taskDetails.title">{{ taskDetails.title }}</textarea>
+            placeholder="input some title" v-model="taskDetails.title">{{ taskDetails.title }}</textarea>
         </header>
         <main class="flex flex-row h-[80%] px-[25px] ">
           <div class="w-[70%] h-[100%] py-[10px]">
@@ -37,16 +34,15 @@ console.log(props.mode)
               class="itbkk-description w-[95%] h-[90%] px-[15px] border-[2px] border-gray-400 rounded-[8px]"
               v-model="taskDetails.description">
             </textarea>
-            <textarea v-if="mode === 'read'"
-              class="itbkk-description w-[95%] h-[90%] px-[15px] border-[2px] border-gray-400 rounded-[8px]"
+            <div v-if="mode === 'read'"
+              class="itbkk-description w-[95%] h-[90%] px-[15px] py-[10px] border-[2px] border-gray-400 rounded-[8px] break-all"
               :class="{ 'italic text-gray-500': !taskDetails.description }">
-
-						{{
+              {{
             taskDetails.description
               ? taskDetails.description
               : "No Description Provided"
           }}
-				    </textarea>
+            </div>
           </div>
           <div class="flex flex-col w-[30%] h-[94%]">
             <div class="flex flex-col h-[45%] py-[10px] mb-[15px]">
@@ -100,7 +96,7 @@ console.log(props.mode)
             <div
               class="itbkk-button itbkk-button-confirm flex w-[65px] h-[40px] font-[600] text-white bg bg-green-500 rounded-[3px] hover:bg-green-600"
               @click="$emit('confirm', mode, taskDetails)">
-              <button class="m-[auto]">Ok</button>
+              <button class="m-[auto]">{{ mode === 'add' ? 'Save' : 'Ok' }}</button>
             </div>
             <div
               class="itbkk-button itbkk-button-cancel flex w-[80px] h-[40px] font-[600] text-gary-800 bg bg-gray-200 hover:bg-gray-300"

@@ -17,11 +17,11 @@ export default class taskMangement {
 			this.addTask(newTask)
 		})
 	}
-	editTask(taskId, updateTaks) {
+	editTask(taskId, updateTask) {
 		const index = this.taskList.findIndex((e) => e.id === taskId)
 		this.taskList[index] = {
 			...this.taskList[index],
-			...updateTaks,
+			...updateTask,
 		}
 	}
 	deleteTask(taskId) {

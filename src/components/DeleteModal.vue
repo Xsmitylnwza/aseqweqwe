@@ -4,8 +4,13 @@ const emit = defineEmits(["cancel", "confirm"]);
 const props = defineProps({
     taskDetails: {
         type: Object,
+    },
+    taskNumber: {
+        type: Number,
     }
 });
+
+console.log(props.taskNumber)
 </script>
 
 <template>
@@ -15,7 +20,8 @@ const props = defineProps({
                 <div class="text-[28px] font-[600] h-[40%] px-[15px] py-[10px]">Delete a Task
                 </div>
                 <div class="itbkk-message border border-gray-300 min-h-[120px] px-[15px] py-[10px] break-all">
-                    Do you want to delete the task <span class="text-red-600">"{{ taskDetails.title }}" ?</span>
+                    Do you want to delete the task number {{ taskNumber }} - <span class="text-red-600">"{{
+                        taskDetails.title }}" ?</span>
                 </div>
                 <div class="flex flex-row justify-end items-end gap-[20px] h-[25%] mt-[auto] px-[15px] py-[10px]">
                     <div class="itbkk-button-cancel flex items-center justify-center h-[50px] w-[100px] text-white bg-red-500 rounded-[5px]"
