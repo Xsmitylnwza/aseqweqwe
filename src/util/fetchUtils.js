@@ -16,6 +16,62 @@ async function getTaskById(url, id) {
 		} else {
 			return data.status
 		}
-	} catch (error) {}
+	} catch (error) { }
 }
-export { getTaskList, getTaskById }
+
+async function addTask(url, task) {
+	try {
+		const response = await fetch(`${url}`, {
+			method: 'POST',
+			headers: {
+				'Content-Type': 'application/json',
+			},
+			body: JSON.stringify({
+				taskTitle: task.title,
+				taskDescription: task.description,
+				taskAssignees: task.assignees,
+				taskStatus: task.status
+			}),
+		})
+		if (response.ok) {
+			const responseData = await response.json();
+			return responseData;
+		} else {
+			throw new Error('Failed to add task');
+		}
+	} catch (e) {
+		console.log(`error: ${e}`)
+	}
+}
+
+async function editTask(url, task) {
+	try {
+		const respone = await fetch(`${url}/${task.id}`, {
+			method: 'PUT',
+			headers: {
+				'Content-Type': 'application/json',
+			},
+			body: JSON.stringify({
+				id: task.id,
+				taskTitle: task.title,
+				taskDescription: task.description.trim(),
+				taskAssignees: task.assignees,
+				taskStatus: task.status
+			}),
+		})
+		return respone
+	} catch (e) {
+		console.log(`error: ${e}`)
+	}
+}
+async function deleteTaskById(url, id) {
+	try {
+		const response = await fetch(`${url}/${id}`, {
+			method: 'DELETE',
+		})
+		return response
+	} catch (e) {
+		console.log(`error: ${e}`)
+	}
+}
+export { getTaskList, getTaskById, addTask, editTask, deleteTaskById }

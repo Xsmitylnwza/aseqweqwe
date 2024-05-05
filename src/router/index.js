@@ -1,6 +1,6 @@
 import { createRouter, createWebHistory } from "vue-router"
 
-import ListTodo from "@/components/ListTodo.vue"
+import HomeView from "@/views/HomeView.vue"
 
 const router = createRouter({
 	history: createWebHistory(import.meta.env.BASE_URL),
@@ -12,15 +12,24 @@ const router = createRouter({
 		{
 			path: "/task",
 			name: "task	",
-			component: ListTodo,
+			component: HomeView,
 			// component: backup,
 		},
 		{
 			path: "/task/:id",
-			name: "id",
-			component: ListTodo,
-			props: true,
+			name: "details",
+			component: HomeView,
 		},
+		{
+			path: "/task/add",
+			name: "add",
+			component: HomeView
+		},
+		{
+			path: "/task/:id/edit",
+			name: "edit",
+			component: HomeView
+		}
 	],
 })
 
