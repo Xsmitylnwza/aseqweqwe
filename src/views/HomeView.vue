@@ -1,6 +1,6 @@
 <script setup>
 import { onMounted, ref } from "vue"
-import { RouterLink,useRouter,useRoute } from "vue-router"
+import { RouterLink,useRouter } from "vue-router"
 import { getTaskById, getTaskList, addTask, editTask, deleteTaskById } from "@/util/fetchUtils"
 import TaskModal from "@/components/TaskModal.vue"
 import Listmodel from "@/components/ListModel.vue"
@@ -28,9 +28,9 @@ onMounted(async () => {
 		modalHandler(id, 'edit')
 	}else if(id) modalHandler(id,'read')
 
-	const listTodo = await getTaskList(import.meta.env.VITE_BASE_URL + "/tasks")
-	if (listTodo.length === 0) isEmptyTask.value = true
-	taskManagement.value.addTasks(listTodo)
+	const listTasks = await getTaskList(import.meta.env.VITE_BASE_URL + "/tasks")
+	if (listTasks.length === 0) isEmptyTask.value = true
+	taskManagement.value.addTasks(listTasks)
 });
 
 async function modalHandler(id, action) {
@@ -56,26 +56,17 @@ async function modalHandler(id, action) {
 			import.meta.env.VITE_BASE_URL + "/tasks",
 			id
 		)
-		taskDetails.value.createdOn = convertUtils(taskDetails.value.createdOn)
-		taskDetails.value.updatedOn = convertUtils(taskDetails.value.updatedOn)
-		mode.value = 'edit'
-		modalOpen.value = true
+		if (typeof taskDetails.value === 'object') {
+			taskDetails.value.createdOn = convertUtils(taskDetails.value.createdOn)
+			taskDetails.value.updatedOn = convertUtils(taskDetails.value.updatedOn)
+			mode.value = "edit"
+			modalOpen.value = true
+		} else {
+			window.alert("The task does not exist")
+			router.push("/")
+		}
 	}
 
-}
-function convertUtils(timeUTC) {
-	const formattedTimeZone = formatTimeZone(timeUTC)
-	const [date, timeString] = formattedTimeZone.split(",")
-	return `${date} ${timeString}`
-}
-
-function formatTimeZone(timestampString) {
-	const timestamp = new Date(timestampString)
-	const userTimeZone = Intl.DateTimeFormat().resolvedOptions().timeZone
-	const formattedtimestamp = timestamp.toLocaleString("en-GB", {
-		timeZone: userTimeZone,
-	})
-	return formattedtimestamp
 }
 
 function closeDeleteModal(isClose) {
@@ -94,11 +85,11 @@ async function confirmDelete(id) {
 	if(response.status === 200){
 		taskManagement.value.deleteTask(id)
 		showDeleteModal.value = false
-		statusHandler(taskDetails.value.title,'delete')
+		statusHandler(taskDetails.value.title,'deleted')
 		taskDetails.value = {}	
 	}
 	if(response.status === 404){
-		window.alert('The task does not exist !!!')
+		statusHandler(taskDetails.value.title,'deleting','error')
 		taskManagement.value.deleteTask(id)		
 		showDeleteModal.value = false
 		taskDetails.value = {}
@@ -106,20 +97,22 @@ async function confirmDelete(id) {
 }
 
 async function confirmHandeler(action, taskDetails) {
-	console.log(action)
-	console.log(taskDetails)
 	if (!taskDetails.title) {
 		window.alert("You must input title !!!")
 		return
 	}
 	if (action === 'add') {
+	if(!taskDetails?.status) taskDetails.status = 'NO_STATUS';
+	console.log(taskDetails)
 		const respone = await addTask(import.meta.env.VITE_BASE_URL + "/tasks", taskDetails)
-		statusHandler(respone.title,'success')
+		console.log(respone)
+		statusHandler(respone.title,'added')
 		taskManagement.value.addTask(respone)
 	}
 	if (action === 'edit') {
 		const respone = await editTask(import.meta.env.VITE_BASE_URL + "/tasks", taskDetails)
 		console.log(respone)
+		statusHandler(respone.title,'updated')
 		taskManagement.value.editTask(taskDetails.id, taskDetails)
 
 	}
@@ -130,22 +123,42 @@ function closeModal(isClose) {
 	taskDetails.value = {}
 	router.go(-1)
 }
-function statusHandler(title,status){
-	if(status === 'success'){
-		message.value = "The task "+title+ " is added successfully"
-	}else if(status === 'delete'){
-		message.value = "The task "+title+ " is deleted successfully"
-	}
-	statusType.value = "success"
+function statusHandler(title,status,type = 'success'){
+	if(type === 'success') {
+		message.value = `The task ${title} is ${status} successfully`
+	}else message.value = `An error occurred ${status} the task "${title}"`
+	statusType.value = type
 	showAlertModal.value = true
+	let seconds = 10
+	let timer = setInterval(function() {
+		seconds--
+		if (seconds < 0){
+			clearInterval(timer)
+			closeStatusModal(false)
+		}
+	},1000)
 }
+
 function closeStatusModal(isClose){
 	showAlertModal.value = isClose
 	message.value = ""
 	statusType.value = ""
-
 }
 
+function convertUtils(timeUTC) {
+	const formattedTimeZone = formatTimeZone(timeUTC)
+	const [date, timeString] = formattedTimeZone.split(",")
+	return `${date} ${timeString}`
+}
+
+function formatTimeZone(timestampString) {
+	const timestamp = new Date(timestampString)
+	const userTimeZone = Intl.DateTimeFormat().resolvedOptions().timeZone
+	const formattedtimestamp = timestamp.toLocaleString("en-GB", {
+		timeZone: userTimeZone,
+	})
+	return formattedtimestamp
+}
 
 
 

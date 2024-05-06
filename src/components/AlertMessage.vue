@@ -24,7 +24,7 @@ const props = defineProps({
             </p>
 
         </div>
-        <div @click="$emit('close', false)">
+        <div class="cursor-pointer font-[700]" @click="$emit('close', false)">
             X
         </div>
     </div>
