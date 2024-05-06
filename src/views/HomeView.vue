@@ -62,7 +62,7 @@ async function modalHandler(id, action) {
 			mode.value = "edit"
 			modalOpen.value = true
 		} else {
-			window.alert("The task does not exist")
+			window.alert("The requested task does not exist")
 			router.push("/")
 		}
 	}
@@ -125,7 +125,7 @@ function closeModal(isClose) {
 }
 function statusHandler(title,status,type = 'success'){
 	if(type === 'success') {
-		message.value = `The task ${title} is ${status} successfully`
+		message.value = `The task has been  ${status} successfully`
 	}else message.value = `An error occurred ${status} the task "${title}" dose not exist`
 	statusType.value = type
 	showAlertModal.value = true
