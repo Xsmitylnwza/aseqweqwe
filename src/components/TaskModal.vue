@@ -67,10 +67,10 @@ function saveBthHandler() {
               </p>
               <textarea v-if="mode !== 'read'"
                 class="itbkk-assignees px-[10px] py-[12px] border-[2px] border-gray-300 rounded-[4px] break-all"
-                v-model="taskDetails.assignees"></textarea>
+                v-model="taskDetails.assignees" @input="saveBthHandler"></textarea>
               <div v-if="mode === 'read'"
                 class="itbkk-assignees min-h-[180px] px-[10px] py-[12px] border-[2px] border-gray-300 rounded-[4px] break-all"
-                :class="{ 'italic text-gray-500': !taskDetails.assignees }" @input="saveBthHandler">
+                :class="{ 'italic text-gray-500': !taskDetails.assignees }">
                 {{
             taskDetails.assignees ? taskDetails.assignees : "Unassigned"
           }}
