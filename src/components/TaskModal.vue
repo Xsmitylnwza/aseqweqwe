@@ -96,7 +96,7 @@ const props = defineProps({
             <div
               class="itbkk-button itbkk-button-confirm flex w-[65px] h-[40px] font-[600] text-white bg bg-green-500 rounded-[3px] hover:bg-green-600"
               @click="$emit('confirm', mode, taskDetails)">
-              <button class="m-[auto]">{{ mode === 'add' ? 'Save' : 'Ok' }}</button>
+              <button class="m-[auto]">{{ mode !== 'read' ? 'Save' : 'Ok' }}</button>
             </div>
             <div
               class="itbkk-button itbkk-button-cancel flex w-[80px] h-[40px] font-[600] text-gary-800 bg bg-gray-200 hover:bg-gray-300"
