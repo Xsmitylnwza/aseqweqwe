@@ -20,6 +20,7 @@ async function getTaskById(url, id) {
 }
 
 async function addTask(url, task) {
+	console.log(task)
 	try {
 		const response = await fetch(`${url}`, {
 			method: 'POST',
@@ -27,9 +28,9 @@ async function addTask(url, task) {
 				'Content-Type': 'application/json',
 			},
 			body: JSON.stringify({
-				taskTitle: task.title,
-				taskDescription: task.description,
-				taskAssignees: task.assignees,
+				taskTitle: task.title.trim(),
+				taskDescription: task.description.trim(),
+				taskAssignees: task.assignees.trim(),
 				taskStatus: task.status
 			}),
 		})
@@ -54,12 +55,15 @@ async function editTask(url, task) {
 			body: JSON.stringify({
 				id: task.id,
 				taskTitle: task.title,
-				taskDescription: task.description.trim(),
+				taskDescription: task.description,
 				taskAssignees: task.assignees,
 				taskStatus: task.status
 			}),
 		})
-		return respone
+		if (respone.ok) {
+			const responseData = await respone.json();
+			return responseData;
+		}
 	} catch (e) {
 		console.log(`error: ${e}`)
 	}
