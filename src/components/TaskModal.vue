@@ -16,6 +16,7 @@ const props = defineProps({
     default: "read"
   }
 });
+
 const oldTask = ref({ ...props.taskDetails });
 const isDisable = ref(true)
 
@@ -110,9 +111,9 @@ function saveBthHandler() {
         </main>
         <footer class="h-[10%] px-[25px] border-t-2 border-gray-300 bg bg-[#F8F8F8] rounded-b-[7px]">
           <div class="flex flex-row justify-end items-center gap-[15px] mt-[10px]">
-            <button
-              class="itbkk-button itbkk-button-confirm flex w-[65px] h-[40px] font-[600] text-white bg bg-green-500 rounded-[3px] hover:bg-green-600"
-              @click="$emit('confirm', mode, taskDetails)" :disabled="isDisable">
+            <button class="itbkk-button itbkk-button-confirm flex w-[65px] h-[40px] font-[600] text-white bg "
+              :class="isDisable ? 'bg-gray-400' : 'bg-green-500 hover:bg-green-600'"
+              @click="$emit('confirm', mode, taskDetails)" :disabled="isDisable" v-show="mode !== 'read'">
               <!-- <button class="m-[auto]">{{ mode !== 'read' ? 'Save' : 'Ok' }}</button> -->
               <div class="m-[auto] disabled">
                 {{ mode !== 'read' ? 'Save' : 'Ok' }}
