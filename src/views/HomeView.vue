@@ -50,7 +50,9 @@ async function modalHandler(id, action) {
 		}
 	} else if (action === 'add') {
 		mode.value = "add"
+		taskDetails.value = {status:"NO_STATUS"}
 		modalOpen.value = true
+		
 	} else if (action === 'edit') {
 		taskDetails.value = await getTaskById(
 			import.meta.env.VITE_BASE_URL + "/tasks",
