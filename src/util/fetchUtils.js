@@ -28,9 +28,9 @@ async function addTask(url, task) {
 				'Content-Type': 'application/json',
 			},
 			body: JSON.stringify({
-				taskTitle: task.title.trim(),
-				taskDescription: task.description.trim(),
-				taskAssignees: task.assignees.trim(),
+				taskTitle: task.title?.trim(),
+				taskDescription: task.description?.trim(),
+				taskAssignees: task.assignees?.trim(),
 				taskStatus: task.status
 			}),
 		})

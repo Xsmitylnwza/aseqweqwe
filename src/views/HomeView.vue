@@ -126,7 +126,7 @@ function closeModal(isClose) {
 function statusHandler(title,status,type = 'success'){
 	if(type === 'success') {
 		message.value = `The task ${title} is ${status} successfully`
-	}else message.value = `An error occurred ${status} the task "${title}"`
+	}else message.value = `An error occurred ${status} the task "${title}" dose not exist`
 	statusType.value = type
 	showAlertModal.value = true
 	let seconds = 10
